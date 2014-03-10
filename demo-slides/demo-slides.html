@@ -128,6 +128,11 @@
     </section>
 
     <section>
+      <h2>SIMD: Single Instruction, Multiple Data</h2>
+      <img src="simd-03.png" style="border:0px" />
+    </section>
+    
+    <section>
       <h2>Mandelbrot kernel - scalar</h2>
       <pre><code data-trim>
 //
@@ -165,33 +170,41 @@ function mandelx1 (c_re, c_im) {
 //
 function mandelx4(c_re4, c_im4) {
   var z_re4  = c_re4,
-  var z_im4  = c_im4;
-  var four4  = SIMD.float32x4.splat (4.0);
-  var two4   = SIMD.float32x4.splat (2.0);
-  var count4 = SIMD.int32x4.splat (0);
-  var one4   = SIMD.int32x4.splat (1);
-  var i;
+      z_im4  = c_im4,
+      four4  = SIMD.float32x4.splat (4.0),
+      two4   = SIMD.float32x4.splat (2.0),
+      count4 = SIMD.int32x4.splat (0),
+      one4   = SIMD.int32x4.splat (1),
+      i, z_re24, z_im24, mi4, new_re4, new_im4;
 
   for (i = 0; i < max_iterations; ++i) {
-    var z_re24 = SIMD.float32x4.mul (z_re4, z_re4);
-    var z_im24 = SIMD.float32x4.mul (z_im4, z_im4);
+    z_re24 = SIMD.float32x4.mul (z_re4, z_re4);
+    z_im24 = SIMD.float32x4.mul (z_im4, z_im4);
 
-    var mi4    = SIMD.float32x4.lessThanOrEqual (SIMD.float32x4.add (z_re24, z_im24), four4);
+    mi4    = SIMD.float32x4.lessThanOrEqual (SIMD.float32x4.add (z_re24, z_im24), four4);
     // if all 4 values are greater than 4.0, there's no reason to continue
     if (mi4.signMask === 0x00) {
       break;
     }
 
-    var new_re4 = SIMD.float32x4.sub (z_re24, z_im24);
-    var new_im4 = SIMD.float32x4.mul (SIMD.float32x4.mul (two4, z_re4), z_im4);
-    z_re4       = SIMD.float32x4.add (c_re4, new_re4);
-    z_im4       = SIMD.float32x4.add (c_im4, new_im4);
-    count4      = SIMD.int32x4.add (count4, SIMD.int32x4.and (mi4, one4));
+    new_re4 = SIMD.float32x4.sub (z_re24, z_im24);
+    new_im4 = SIMD.float32x4.mul (SIMD.float32x4.mul (two4, z_re4), z_im4);
+    z_re4   = SIMD.float32x4.add (c_re4, new_re4);
+    z_im4   = SIMD.float32x4.add (c_im4, new_im4);
+    count4  = SIMD.int32x4.add (count4, SIMD.int32x4.and (mi4, one4));
   }
   return count4;
 }
 </code></pre>
     </section>
+
+    <section>
+      <h2>Download the Intel<sup>&reg;</sup> XDK - It's free!</h2>
+      <img src="xdk-ww.png" style="border:0px" />
+      <img src="xdk-ww-qr.png" style="margin-left:-206px; border:0px" />
+      <p><a href="http://software.intel.com/html5/tools">http://software.intel.com/html5/tools</a></p>
+    </section>
+
   </div>
 </div>
 
