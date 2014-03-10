@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Intel&reg; XDK Demo</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<link rel="stylesheet" href="css/reveal.min.css">
+		<link rel="stylesheet" href="css/theme/simple.css" id="theme">
+
+		<!-- For syntax highlighting -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+		<script>
+			if( window.location.search.match( /print-pdf/gi ) ) {
+				var link = document.createElement( 'link' );
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = 'css/print/pdf.css';
+				document.getElementsByTagName( 'head' )[0].appendChild( link );
+			}
+		</script>
+		<style>
+        @media screen {		    
+	        div.footer {
+	            background:transparent url(blue-header-caret.png) repeat-x left top;    
+	            #background:rgba(32,100,255,0.5);
+	            color:white;
+	            #border:solid white 2px;
+                position:absolute;
+                bottom:0px;
+                width:100%;
+                height:30px;
+                font-size:12pt;
+            }
+            div.footer .left-align {
+                 position:relative;
+                 float:left;
+                 top:25%;
+                 width:5%;        
+            }
+            div.footer .center-align {
+                 position:relative;
+                 float:left;
+                 text-align:center;
+                 top:25%;
+                 width:90%;
+            }        
+            div.footer .right-align {
+                 position:relative;
+                 float:left;
+                 text-align:center;
+                 top:5%;
+                 width:5%;
+            }
+        }
+        @media print 
+        {
+            div.footer {display:none;}
+        }
+
+        .reveal code 
+        {
+        	font-family: Lucida Console;
+        	max-height:600px;
+        }
+        
+        pre .class .title 
+        {
+        	color: black;
+        }        	        
+        pre .function .title 
+        {
+        	color: black;
+        }        	        
+        pre code 
+        {
+        	background: white;
+        	color: black;
+        	max-height: 800px !important;
+        }
+        pre .keyword {
+        	color: blue;
+        }
+        pre .variable 
+        {
+        	color: Black;
+        }
+		</style>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+<body>
+
+<div class="reveal">
+
+  <div class="footer">
+    <div id="slide_index" class="left-align">&nbsp;</div>
+    <div class="center-align">Intel Corporation</div>
+    <div class="right-align""><img src="intel.png"></div>
+  </div>
+            
+  <div class="slides">
+    <section>
+      <h1>Intel<sup>&reg;</sup> XDK Demo</h1>
+      <h3>with SIMD enabled Crosswalk runtime</h3>
+      <p>
+        <small>Peter Jensen<br/>Ivan Jibaja<br/>Greeshma Yellareddy</small>
+      </p>
+    </section>
+
+    <section>
+      <h2>Demo Setup</h2>
+      <img src="demo-setup.png" style="border:0px; box-shadow:0 0 0" />
+    </section>
+
+    <section>
+      <h2>Mandelbrot kernel - scalar</h2>
+      <pre><code data-trim>
+//
+// z(i+1) = z(i)^2 + c
+// terminate when |z| > 2.0
+// returns 1 iteration count
+//
+function mandelx1 (c_re, c_im) {
+  var z_re = c_re, z_im = c_im, i;
+  
+  for (i = 0; i < max_iterations; ++i) {
+    var z_re2 = z_re*z_re;
+    var z_im2 = z_im*z_im;
+    if (z_re2 + z_im2 > 4.0) {
+      break;
+    }
+
+    var new_re = z_re2 - z_im2;
+    var new_im = 2.0 * z_re * z_im;
+    z_re = c_re + new_re;
+    z_im = c_im + new_im;
+  }
+  return i;
+}
+</code></pre>
+    </section>
+
+    <section>
+      <h2>Mandelbrot kernel - SIMD</h2>
+      <pre><code data-trim>
+//
+// z(i+1) = z(i)^2 + c
+// terminate when |z| > 2.0
+// returns 4 iteration counts
+//
+function mandelx4(c_re4, c_im4) {
+  var z_re4  = c_re4,
+  var z_im4  = c_im4;
+  var four4  = SIMD.float32x4.splat (4.0);
+  var two4   = SIMD.float32x4.splat (2.0);
+  var count4 = SIMD.int32x4.splat (0);
+  var one4   = SIMD.int32x4.splat (1);
+  var i;
+
+  for (i = 0; i < max_iterations; ++i) {
+    var z_re24 = SIMD.float32x4.mul (z_re4, z_re4);
+    var z_im24 = SIMD.float32x4.mul (z_im4, z_im4);
+
+    var mi4    = SIMD.float32x4.lessThanOrEqual (SIMD.float32x4.add (z_re24, z_im24), four4);
+    // if all 4 values are greater than 4.0, there's no reason to continue
+    if (mi4.signMask === 0x00) {
+      break;
+    }
+
+    var new_re4 = SIMD.float32x4.sub (z_re24, z_im24);
+    var new_im4 = SIMD.float32x4.mul (SIMD.float32x4.mul (two4, z_re4), z_im4);
+    z_re4       = SIMD.float32x4.add (c_re4, new_re4);
+    z_im4       = SIMD.float32x4.add (c_im4, new_im4);
+    count4      = SIMD.int32x4.add (count4, SIMD.int32x4.and (mi4, one4));
+  }
+  return count4;
+}
+</code></pre>
+    </section>
+  </div>
+</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.min.js"></script>
+
+		<script>
+
+			// Full list of configuration options available here:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+				width: 1200,
+				height: 1000,
+
+				theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+				transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+				// Parallax scrolling
+				// parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+				// parallaxBackgroundSize: '2100px 900px',
+
+				// Optional libraries used to extend on reveal.js
+				dependencies: [
+					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+				]
+			});
+
+			var slideElem = document.getElementById ("slide_index");
+
+      function updateSlideNumber (indexh, indexv) {
+			    var indexString = "" + (indexh + 1);
+			    slideElem.innerText = indexString;
+			}
+			Reveal.addEventListener ('ready', function (event) {
+			    updateSlideNumber (event.indexh, event.indexv);
+			});
+			Reveal.addEventListener ('slidechanged', function (event) {
+			    updateSlideNumber (event.indexh, event.indexv);
+			});
+
+		</script>
+
+	</body>
+</html>
