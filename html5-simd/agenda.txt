@@ -1,0 +1,56 @@
+Agenda:
+  SIMD Intro
+  Brief History
+    - Polyfill
+  SIMD C/C++
+  SIMD JavaScript
+  Hardware/Software Disconnect
+  Physics Demo
+    - Single no-SIMD constant accelleration
+    - Math background
+    - JS no-SIMD code
+    - Single no-SIMD/SIMD variable accelleration
+    - JS SIMD code
+  API details
+    - types (SIMD.float32x4 and SIMD.int32x4)
+    - Operations
+  Shuffle Example
+
+  Mandelbrot Demo
+    - JS code (SIMD/nonSIMD)
+    - Demo
+
+  Prototypes
+    - Chrome
+    - Firefox (interpreter support)
+    - Crosswalk
+
+  Application Domains
+    - Games
+      - vector matrix operations, e.g. glMatrix.js (for webGL)
+      - physics
+      - Box2D
+    - Image processing
+    - Signal/audio processing
+    - Fluid dynamics
+    - Cryptography
+
+  Performance results
+
+  How to use Today!
+    - Intel XDK with Crosswalk
+
+  Device Demo
+    - Videocast
+
+  Going forward
+    - Finish Firefox prototype
+    - ES7 proposal TC39 presentation (July meeting)
+    - Short Vector Math Library (sin/cos/exp/pow etc)
+    - Higher level abstractions API's written in JS
+
+  References
+
+  Acknowledgements
+
+  Questions

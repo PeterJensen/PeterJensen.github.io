@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head>
+<link rel="stylesheet" href="shuffle.css">
+</head>
+<body>
+<div id="svgContainer" style="width:600px; height:300px"></div>
+<script type="text/javascript" src="d3.min.js"></script>
+<script type="text/javascript" src="shuffle3.js"></script>
+<script type="text/javascript">
+  shuffle.createDiagram("#svgContainer");
+  setTimeout(shuffle.startTransition, 2000);
+</script>
+</body>
+</html>

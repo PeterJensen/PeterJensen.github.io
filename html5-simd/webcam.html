@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+<video autoplay width="1400"></video>
+<script>
+  navigator.getUserMedia = navigator.getUserMedia ||
+                     navigator.webkitGetUserMedia ||
+                     navigator.mozGetUserMedia ||
+                     navigator.msGetUserMedia;
+  var errorCallback = function(e) {
+    console.log('Reeeejected!', e);
+  };
+
+  navigator.getUserMedia({video: true}, function(localMediaStream) {
+    var video = document.querySelector('video');
+    video.src = window.URL.createObjectURL(localMediaStream);
+    video.onloadedmetadata = function(e) {
+      console.log('Meta Data Loaded');
+    };
+  }, errorCallback);
+</script>
+</body>
+</html>

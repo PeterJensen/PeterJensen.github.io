@@ -1,0 +1,30 @@
+
+body {
+  margin:auto;
+}
+
+#svgContainer {
+  position:absolute
+  margin:0;
+  padding:0;
+  overflow: hidden;
+}
+
+.box {
+  fill: white;
+  stroke: black;
+  stroke-width:1px;
+}
+
+.boxText {
+  font-family: "Lucida Console", sans-serif;
+  font-size: 7px;
+}
+
+.visible {
+  visibility:visible;
+}
+
+.invisible {
+  visibility:hidden;
+}

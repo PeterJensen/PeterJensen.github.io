@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>SIMD Programming in JavaScript</title>
+
+  <meta name="description" content="SIMD Programming in JavaScript">
+  <meta name="author" content="Peter Jensen">
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <link rel="stylesheet" href="css/reveal.min.css">
+  <link rel="stylesheet" href="css/theme/simple-local.css" id="theme">
+  <link rel="stylesheet" href="shuffle.css">
+
+
+  <!-- For syntax highlighting -->
+  <link rel="stylesheet" href="lib/css/zenburn.css">
+
+  <!-- Custom styling -->
+  <link rel="stylesheet" href="html5-simd.css">
+
+  <!-- If the query includes 'print-pdf', include the PDF print sheet -->
+  <script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = 'css/print/pdf.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+  </script>
+
+  <!--[if lt IE 9]>
+  <script src="lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+<div class="reveal">
+
+<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+
+<section>
+  <h1>SIMD Programming<br />in JavaScript<sup class="star">*</sup></h1>
+  <h3>May 22, 2014 </h3>
+  <p>Peter Jensen (<a href="http://twitter.com/kaptajnjensen">@kaptajnjensen</a>)</p>
+  <p>Intel<sup>&reg;</sup> Corporation</p>
+  <div id="gotoBirds" class="frontButton">Birds</div>
+  <div id="gotoMandelbrot" class="frontButton">Mandelbrot</div>
+  <aside class="notes">
+    SIMD programming in JavaScript<br />
+    Background is compiler optimizers (C/C++/Fortran)
+  </aside>
+</section>
+
+<section>
+  <h2>Mandelbrot Demo</h2>
+  <iframe scrolling="no" src="mandelbrot-xdk-ww.html" style="width:100%; height:900px"></iframe>
+<!--
+  <table><tr>
+  <td><img src="mandelbrot-2.png" /></td>
+  <td><img src="mandelbrot.png" /></td>
+  </tr></table>
+-->
+</section>
+
+<section>
+  <h2>SIMD: Single Instruction, Multiple Data</h2>
+  <img class="fragment fade-in" src="simd-04.png">
+</section>
+
+<section>
+  <h2>Brief History</h2>
+  <ul>
+    <li>Mozilla<sup class="star">*</sup>/Google<sup class="star">*</sup>/Intel<sup>&reg;</sup> collaboration</li>
+    <li>Started mid-2013</li>
+    <li>Initial polyfill spec by John McCutchan (Google<sup class="star">*</sup>/Dart<sup class="star">*</sup> VM team)</li>
+    <li>Prototypes for Chromium<sup class="star">*</sup>, Firefox<sup class="star">*</sup>, and Crosswalk</li>
+  </ul>
+</section>
+
+<section>
+  <h2>JavaScript<sup class="star">*</sup>'s Popularity and Use on the Rise!</h2>
+  <table>
+  <tr>
+  <td><img src="js-usage02.png" />
+      <div class="footnote1">Source: <a href="https://twitter.com/joemccann/status/456502011941621760">twitter.com/joemccann/status/456502011941621760</a></div></td>
+  <td><ul>
+    <li>Games (Unreal<sup class="star">*</sup>, Unity<sup class="star">*</sup>) (via Emscripten<sup class="star">*</sup>/asm.js)</li>
+    <li>Hybrid HTML5 apps on mobile devices</li>
+    <li>Pure HTML5 apps in ChromeOS<sup class="star">*</sup>/FirefoxOS<sup class="star">*</sup>/Tizen<sup class="star">*</sup></li>
+    <li>Standalone desktop apps via node-webkit</li>
+    <li>Full featured productivity web apps (Google<sup class="star">*</sup> Docs, Maps, Intel<sup>&reg;</sup> XDK etc)</li>
+    <li>Server side logic via node.js</li>
+  </ul></td>
+  </tr>
+  </table>
+</section>
+
+<section>
+  <h2>Hardware/Software Disconnect!</h2>
+  <br />
+  <blockquote>SIMD instructions are an increasingly larger<br />portion of instruction set architectures of newer CPUs</blockquote>
+  <br />
+  <blockquote>Currently, no way to utilize these powerful instructions<br /> from JavaScript<sup class="star">*</sup> programs</blockquote>
+</section>
+
+<section>
+<h2>SIMD Programming in C/C++</h2>
+<pre><code class="cpp" data-noescape>float average(float *src, int len) {
+  <span class="fragment highlight" data-fragment-index="2">float sum = 0.0;</span>
+  <span class="fragment highlight" data-fragment-index="3">for (int i = 0; i < len; ++i) {
+  sum = sum + src[i];
+}</span>
+  <span class="fragment highlight" data-fragment-index="4">return sum/len;</span>
+}
+</code></pre>
+<pre><code class="cpp fragment" data-fragment-index="1" data-noescape>#if defined(__i386__)
+float simdAverage(float *src, int len) {
+  <span class="fragment highlight" data-fragment-index="2">__m128 sumx4 = _mm_setzero_ps();</span>
+  <span class="fragment highlight" data-fragment-index="3">for (int i = 0; i < len; i += 4) {
+  sumx4 = _mm_add_ps(sumx4, _mm_loadu_ps(src));
+  src += 4;
+}</span>
+  <span class="fragment highlight" data-fragment-index="4">float sumx4_mem[4];
+_mm_storeu_ps(sumx4_mem, sumx4);
+return (sumx4_mem[0] + sumx4_mem[1] +
+        sumx4_mem[2] + sumx4_mem[3])/len;</span>
+}
+#elif defined(__arm__)
+float simdAverage(float *src, int len) {
+  <span class="fragment highlight" data-fragment-index="2">float32x4_t sumx4 = vdupq_n_f32(0.0);</span>
+  <span class="fragment highlight" data-fragment-index="3">for (int i = 0; i < len; i += 4) {
+  sumx4 = vaddq_f32(sumx4, vld1q_f32(src));
+  src += 4;
+}</span>
+  <span class="fragment highlight" data-fragment-index="4">return (vgetq_lane_f32(sumx4,0) + vgetq_lane_f32(sumx4,1) +
+       vgetq_lane_f32(sumx4,2) + vgetq_lane_f32(sumx4,3))/len;</span>
+}
+#else 
+float simdAverage(float *src, int len) {
+  return average(src, len);
+}
+#endif
+</code></pre>
+</section>
+
+<section>
+<h2>SIMD Programming in JavaScript<sup class="star">*</sup></h2>
+<br />
+<pre><code class="javascript" data-noescape>function simdAverage(src, len) {
+  <span class="fragment highlight">var sumx4 = SIMD.float32x4.splat(0.0);
+var srcx4 = new Float32x4Array(src.buffer);</span>
+  <span class="fragment highlight">for (var i = 0, n = len/4; i < n; ++i) {
+  sumx4 = SIMD.float32x4.add(sumx4, srcx4.getAt(i));
+}</span>
+  <span class="fragment highlight">return (sumx4.x + sumx4.y + sumx4.z + sumx4.w)/len;</span>
+}
+</code></pre>
+<ul>
+<li class="fragment">Performance: Equivalent to C/C++</li>
+<li class="fragment">Shared code for:
+  <ul>
+  <li class="fragment">All<sup class="dagger">&dagger;</sup> architectures</li>
+  <li class="fragment">All<sup class="dagger">&dagger;</sup> OSes</li>
+  <li class="fragment">All<sup class="dagger">&dagger;</sup> Browsers</li>
+  <br />
+  <div class="fragment">&dagger;) Where SIMD browser support is available</div>
+  </ul>
+</li>
+</ul>
+</section>
+
+<section id="fbird1">
+<h2>Physics Example</h2>
+<iframe scrolling="no" class="fragment" src="fbird.html?width=100%&height=100%&startX=center&startY=10&startStopButton=false&simdButton=false&fpsIndicator=false&birdCountIndicator=false&initialBirdCount=1&adjustBirds=false&constantAccel=true&scale=2.0&initialize=false" style="width:100%;height:500px"></iframe>
+<img class="fragment" src="profile-01.png" />
+</section>
+
+<section>
+  <h2>A Little Math<br />Constant Acceleration</h2>
+  <br />
+  <p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msub>
+          <mi>v</mi>
+          <mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow>
+        </msub>
+        <mo>=</mo>
+        <mi>a</mi>
+        <mo>&InvisibleTimes;</mo>
+        <mrow><mi>&Delta;</mi><mi>t</mi></mrow>
+        <mo>+</mo>
+        <msub>
+          <mi>v</mi>
+          <mi>n</mi>
+        </msub>
+      </math>
+  </p>
+  <br />
+  <p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+        <msub>
+          <mi>s</mi>
+          <mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow>
+        </msub>
+        <mo>=</mo>
+        <mfrac><mn>1</mn><mn>2</mn></mfrac>
+        <mo>&InvisibleTimes;</mo>
+        <mi>a</mi>
+        <mo>&InvisibleTimes;</mo>
+        <msup>
+          <mfenced open="(" close=")"><mrow><mi>&Delta;</mi><mi>t</mi></mrow></mfenced>
+          <mn>2</mn>
+        </msup>
+        <mo>+</mo>
+        <msub>
+          <mi>v</mi>
+          <mi>n</mi>
+        </msub>
+        <mo>&InvisibleTimes;</mo>
+        <mi>&Delta;</mi><mi>t</mi>
+        <mo>+</mo>
+        <msub>
+          <mi>s</mi>
+          <mi>n</mi>
+        </msub>
+      </math>
+  </p>
+</section>
+
+<section>
+  <h2>Multiple birds<br />Constant Acceleration </h2>
+  <pre><code class="javascript" data-noescape>function updateAllConstantAccel(timeDelta) {
+  var timeDeltaSec = timeDelta/1000.0;
+  var timeDeltaSecSquared = timeDeltaSec*timeDeltaSec;
+  for (var i = 0; i < actualBirds; ++i) {
+    var pos = posArray[i];
+    var vel = velArray[i];
+    var newPos = 0.5*accelData.valueConst*timeDeltaSecSquared + vel*timeDeltaSec + pos;
+    var newVel = accelData.valueConst*timeDeltaSec + vel;
+    <span class="fragment highlight">if (newPos > maxPos) {
+  newVel = -newVel;
+}</span>
+    posArray[i] = newPos;
+    velArray[i] = newVel;
+  }
+}</code></pre>
+</section>
+
+<section>
+  <h2>Variable Acceleration</h2>
+  <img src="graph.png" />
+</section>
+
+<section>
+  <h2>More Math<br />Variable Acceleration</h2>
+  <br />
+  <p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+    <mstyle displaystyle='true'>
+      <msub>
+        <mi>v</mi>
+        <mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow>
+      </msub>
+      <mo>=</mo>
+      <mfenced>
+      <mrow>
+      <munderover>
+        <mo>&sum;</mo>
+        <mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow>
+        <mi>N</mi>
+      </munderover>
+      <msub><mi>a</mi><mi>i</mi></msub>
+      <mo>&InvisibleTimes;</mo>
+      <mfrac>
+        <mrow><mi>&Delta;</mi><mi>t</mi></mrow>
+        <mi>N</mi>
+      </mfrac>
+      </mfenced>
+      <mo>+</mo>
+      <msub>
+        <mi>v</mi>
+        <mi>n</mi>
+      </msub>
+    </mstyle>
+    </math>
+  </p>
+  <br />
+  <p>
+    <math xmlns="http://www.w3.org/1998/Math/MathML">
+    <mstyle displaystyle='true'>
+      <msub>
+        <mi>s</mi>
+        <mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow>
+      </msub>
+      <mo>=</mo>
+      <mfenced>
+        <mrow>
+          <munderover>
+            <mo>&sum;</mo>
+            <mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow>
+            <mi>N</mi>
+          </munderover>
+              <mfrac><mn>1</mn><mn>2</mn></mfrac>
+              <mo>&InvisibleTimes;</mo>
+              <msub><mi>a</mi><mi>i</mi></msub>
+              <mo>&InvisibleTimes;</mo>
+              <msup>
+                <mfenced>
+                  <mfrac>
+                    <mrow><mi>&Delta;</mi><mi>t</mi></mrow>
+                    <mi>N</mi>
+                  </mfrac>
+                </mfenced>
+                <mn>2</mn>
+              </msup>
+              <mo>+</mo>
+              <msub>
+                <mi>v</mi>
+                <mi>n</mi>
+              </msub>
+              <mo>&InvisibleTimes;</mo>
+              <mfrac>
+                <mrow><mi>&Delta;</mi><mi>t</mi></mrow>
+                <mi>N</mi>
+              </mfrac>
+            </mrow>
+      </mfenced>
+      <mo>+</mo>
+      <msub>
+        <mi>s</mi>
+        <mi>n</mi>
+      </msub>
+    </mstyle>
+    </math>
+  </p>
+</section>
+
+<section>
+  <h2>Multiple Birds<br />Variable Acceleration</h2>
+  <pre><code class="javascript" data-noescape>function updateAllSimd(timeDelta) {
+  var steps        = accelData.steps;
+  var accelCount   = accelData.values.length;
+  var subTimeDelta = timeDelta/steps/1000.0;
+
+  <span class="fragment highlight">var posArrayx4            = new Float32x4Array(posArray.buffer);
+var velArrayx4            = new Float32x4Array(velArray.buffer);</span>
+  var maxPosx4              = SIMD.float32x4.splat(maxPos);
+  var subTimeDeltax4        = SIMD.float32x4.splat(subTimeDelta);
+  var subTimeDeltaSquaredx4 = SIMD.float32x4.mul(subTimeDeltax4, subTimeDeltax4);
+  var point5x4              = SIMD.float32x4.splat(0.5);
+
+  <span class="fragment highlight">for (var i = 0, len = (actualBirds+3)>>2; i < len; ++i) {</span>
+    var newVelTruex4;
+    var accelIndex = 0;
+    var newPosx4   = posArrayx4.getAt(i);
+    var newVelx4   = velArrayx4.getAt(i);
+    for (var a = 0; a < steps; ++a) {
+      var accel   = accelData.values[accelIndex];
+      var accelx4 = SIMD.float32x4.splat(accel);
+      accelIndex  = (accelIndex + 1) % accelCount;
+      var posDeltax4;
+      posDeltax4   = SIMD.float32x4.mul(point5x4, SIMD.float32x4.mul(accelx4, subTimeDeltaSquaredx4));
+      posDeltax4   = SIMD.float32x4.add(posDeltax4, SIMD.float32x4.mul(newVelx4,subTimeDeltax4));
+      newPosx4     = SIMD.float32x4.add(newPosx4, posDeltax4);
+      newVelx4     = SIMD.float32x4.add(newVelx4, SIMD.float32x4.mul(accelx4, subTimeDeltax4));
+      <span class="fragment highlight">var cmpx4    = SIMD.float32x4.greaterThan(newPosx4, maxPosx4);
+newVelTruex4 = SIMD.float32x4.neg(newVelx4);
+newVelx4     = SIMD.int32x4.select(cmpx4, newVelTruex4, newVelx4);</span>
+    }
+    posArrayx4.setAt(i, newPosx4);
+    velArrayx4.setAt(i, newVelx4);
+  }
+}</code></pre>
+</section>
+
+<section id="fbird2">
+  <h2>Multiple Birds<br />Variable Acceleration</h2>
+  <iframe scrolling="no" class="fragment" src="fbird.html?width=100%&height=100%&startStopButton=false&initialize=false" style="width:100%;height:700px"></iframe>
+</section>
+
+<section>
+  <h2>Performance Profiles</h2>
+  <img src="perf-nosimd2.png" width="1000" />
+  <img src="perf-simd2.png" width="1000"/>
+</section>
+
+<section>
+  <h2>Mandelbrot Demo</h2>
+  <iframe scrolling="no" src="mandelbrot-xdk-ww.html" style="width:100%; height:900px"></iframe>
+<!--
+  <table><tr>
+  <td><img src="mandelbrot-2.png" /></td>
+  <td><img src="mandelbrot.png" /></td>
+  </tr></table>
+-->
+</section>
+
+<section>
+  <h2>Mandelbrot SIMD Kernel</h2>
+<pre><code class="javascript" data-noescape>// z(i+1) = z(i)^2 + c
+// terminate when |z|^2 > 4.0
+// returns 4 iteration counts
+//
+function mandelx4(c_re4, c_im4) {
+  var z_re4  = c_re4,
+      z_im4  = c_im4,
+      four4  = SIMD.float32x4.splat (4.0),
+      two4   = SIMD.float32x4.splat (2.0),
+      count4 = SIMD.int32x4.splat (0),
+      one4   = SIMD.int32x4.splat (1),
+      i, z_re24, z_im24, mi4, new_re4, new_im4;
+
+  for (i = 0; i < max_iterations; ++i) {
+    z_re24 = SIMD.float32x4.mul (z_re4, z_re4);
+    z_im24 = SIMD.float32x4.mul (z_im4, z_im4);
+
+    mi4    = SIMD.float32x4.lessThanOrEqual (SIMD.float32x4.add (z_re24, z_im24), four4);
+    // if all 4 values are greater than 4.0, there's no reason to continue
+    if (mi4.signMask === 0x00) {
+      break;
+    }
+
+    new_re4 = SIMD.float32x4.sub (z_re24, z_im24);
+    new_im4 = SIMD.float32x4.mul (SIMD.float32x4.mul (two4, z_re4), z_im4);
+    z_re4   = SIMD.float32x4.add (c_re4, new_re4);
+    z_im4   = SIMD.float32x4.add (c_im4, new_im4);
+    <span class="fragment highlight">count4  = SIMD.int32x4.add (count4, SIMD.int32x4.and (mi4, one4));</span>
+  }
+  return count4;
+}</code></pre>
+</section>
+
+<section>
+  <h2>API Details</h2>
+  <h3 class="left1">Types:</h3>
+  <ul class="left2">
+    <li>SIMD.float32x4 : 4 lane 32-bit floats</li>
+    <li>SIMD.int32x4 : 4 lane 32 bit ints</li>
+  </ul>
+  <h3 class="left1">Constructors:</h3>
+  <ul class="left2">
+    <li>SIMD.float32x4(x,y,z,w)</li>
+    <li>SIMD.int32x4(x,y,z,w)</li>
+    <li>.splat(val)</li>
+    <li>.zero()</li>
+  </ul>
+</section>
+
+<section>
+  <h2>API Details</h2>
+  <h3 class="left1">Lane Accessors, Mutators</h3>
+  <ul>
+    <li><b>Accessors:</b> .x, .y, .z, .w</li>
+    <li><b>Mutators:</b> .withX(), .withY(), .withZ(). withW()</li>
+  </ul>
+  <h3 class="left1">Operators:</h3>
+  <ul>
+    <li><b>Arithmetic:</b> .abs() .neg() .add() .sub() .mul() .div()<br />.reciprocal() reciprocalSqrt() .scale() .sqrt()</li>
+    <li><b>Shuffle:</b> .shuffle() .shuffleMix()</li>
+    <li><b>Logical:</b> .and() .or() .xor() .not()</li>
+    <li><b>Comparison:</b> .equal() .greaterThan() .lessThan()</li>
+    <li><b>Shift:</b> .shiftLeft() .shiftRightLogical()<br />.shiftRightArithmetic()</li>
+    <li><b>Conversion:</b> .bitsToFloat32x4() .toFloat32x4()<br />.bitsToInt32x4() .toInt32x4()</li>
+    <li><b>Miscelleneous:</b> .clamp() .min() .max()</li>
+  </ul>
+</section>
+
+<section id="shuffle1">
+  <h2>Shuffling - Matrix Transpose</h2>
+  <center><div id="shuffleContainer1" class="shuffleContainer" style="width:600px; height:300px"></div></center>
+<pre class="fragment fade-in" style="margin-top:-100px"><code class="javascript" data-noescape>    var src0     = srcx4.getAt(0);
+    var src1     = srcx4.getAt(1);
+    var src2     = srcx4.getAt(2);
+    var src3     = srcx4.getAt(3);</code></pre>
+</section>
+
+<section id="shuffle2">
+  <h2>Shuffling - Matrix Transpose</h2>
+  <center><div id="shuffleContainer2" class="shuffleContainer" style="width:600px; height:300px"></div></center>
+<pre class="fragment fade-in" style="margin-top:-100px"><code class="javascript" data-noescape>    tmp01 = SIMD.float32x4.shuffleMix(src0, src1, SIMD.XYXY);
+    tmp23 = SIMD.float32x4.shuffleMix(src2, src3, SIMD.XYXY);
+</code></pre>
+</section>
+
+<section id="shuffle3">
+  <h2>Shuffling - Matrix Transpose</h2>
+  <center><div id="shuffleContainer3" class="shuffleContainer" style="width:600px; height:300px"></div></center>
+<pre class="fragment fade-in" style="margin-top:-100px"><code class="javascript" data-noescape>    dst0  = SIMD.float32x4.shuffleMix(tmp01, tmp23, SIMD.XZXZ);
+    dst1  = SIMD.float32x4.shuffleMix(tmp01, tmp23, SIMD.YWYW);</code></pre>
+</section>
+
+<section id="shuffle4">
+  <h2>Shuffling - Matrix Transpose</h2>
+  <center><div id="shuffleContainer4" class="shuffleContainer" style="width:600px; height:300px"></div></center>
+<pre class="fragment fade-in" style="margin-top:-100px"><code class="javascript" data-noescape>    dstx4.setAt(0, dst0);
+    dstx4.setAt(1, dst1);
+    dstx4.setAt(2, dst2);
+    dstx4.setAt(3, dst3);</code></pre>
+</section>
+
+<section>
+  <h2>Prototypes</h2>
+  <ul>
+    <li>Firefox<sup class="star">*</sup><br />
+        <blockquote>Full implementation available internally at Intel<sup>&reg;</sup>.<br />
+        Full interpreter implementation has landed in nightly.<br />
+        Submission of incremental JIT compiler patches is ongoing.</blockquote></li>
+    <li>Chrome<sup class="star">*</sup><br />
+        <blockquote>Full implementation available internally at Intel<sup>&reg;</sup>.<br />Patch submitted to Chromium<sup class="star">*</sup>.</blockquote></li>
+    <li>Crosswalk (Intel<sup>&reg;</sup>'s open source web runtime, based on Blink<sup class="star">*</sup>)<br />
+        <blockquote>Beta version available TODAY!</blockquote></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Application Domains</h2>
+  <ul>
+    <li>Games:
+    <ul>
+      <li>Vector/Matrix operations (e.g., glMatrix.js for webGL)</li>
+      <li>Physics (e.g., box2D, PhysicsJS)</li>
+    </ul></li>
+    <li>Cryptography</li>
+    <li>Image/video Processing</li>
+    <li>Signal/audio processing/filtering</li>
+    <li>Fluid dynamics</li>
+    <li>Finance (e.g., Black-Scholes computations)</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Benchmark Results</h2>
+  <img src="speedup.png" />
+  <div class="footnote2">Hardware: Intel<sup>&reg;</sup> Atom<sup>&trade;</sup> processor Z3770 @1.46GHz, Android<sup class="star">*</sup> 4.4<br />
+  Benchmark: <a href="https://github.com/johnmccutchan/ecmascript_simd/tree/master/src/benchmarks">github.com/johnmccutchan/ecmascript_simd/tree/master/src/benchmarks</a></div>
+</section>
+
+<section>
+  <h2>How to use SIMD in JavaScript<sup class="star">*</sup> TODAY!</h2>
+  <p>Download the Intel<sup>&reg;</sup> XDK: <a href="http://xdk.intel.com">xdk.intel.com</a></p>
+  <p>Build with Crosswalk Beta</p>
+  <table><tr>
+  <td><img src="intel-xdk-1.png" /></td>
+  <td><img src="intel-xdk-2.png" /></td>
+  </tr></table>
+</section>
+
+<section data-state="video-start">
+  <h2>Device Demo - Android/Crosswalk</h2>
+  <video autoplay width="1200"></video>
+</section>
+
+<section>
+  <h2>Going Forward</h2>
+  <ul>
+    <li>Complete Firefox<sup class="star">*</sup> prototype</li>
+    <li>Prepare ES7 proposal for July Meeting</li>
+    <li>Short Vector Math Library - svml.js (sin/cos/tan/exp/log/...)</li>
+    <li>SIMD optimized versions of existing libraries (PhysicsJS, box2DJS, glMatrix.js, etc.)</li>
+    <li>Higher level abstraction libraries?</li>
+  </ul>
+</section>
+
+<section>
+  <h2>References</h2>
+  <ul>
+    <li>Strawman proposal<br />
+        <a href="http://wiki.ecmascript.org/doku.php?id=strawman:simd_number">wiki.ecmascript.org/doku.php?id=strawman:simd_number</a></li>
+    <li>Polyfill<br />
+        <a href="https://github.com/johnmccutchan/ecmascript_simd">github.com/johnmccutchan/ecmascript_simd</a></li>
+    <li>WPMVP (Workshop on Programming Models for SIMD/Vector Processing) 2014 paper<br />
+        <a href="https://sites.google.com/site/wpmvp2014/paper_18.pdf?attredirects=0">sites.google.com/site/wpmvp2014/paper_18.pdf</a></li>
+    <li>Blog post by Axel Raushmayer: JavaScript<sup class="star">*</sup> gains support for SIMD<br />
+        <a href="http://www.2ality.com/2013/12/simd-js.html">www.2ality.com/2013/12/simd-js.html</a></li>
+    <li>Blog post by Mohammad Haghighat: Bringing SIMD to JavaScript<br />
+        <a href="https://01.org/blogs/tlcounts/2014/bringing-simd-javascript">01.org/blogs/tlcounts/2014/bringing-simd-javascript</a></li>
+    <li>White paper by Ivan Jibaja: SIMD in JavaScript<br />
+        <a href="https://01.org/node/1495">https://01.org/node/1495</a></li>
+  </ul>
+</section>
+
+<section>
+  <h2>Acknowledgements</h2>
+  <ul>
+    <li>Google<sup class="star">*</sup>: John McCutchan</li>
+    <li>Mozilla<sup class="star">*</sup>: Niko Matsakis, Dan Gohman, Luke Wagner, Alon Zakai</li>
+    <li>Intel<sup>&reg;</sup>: Mohammad Haghighat, Ivan Jibaja, Haitao Feng, Ningxin Hu, Weiliang Lin, Heidi Pan</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Thank You!</h2>
+  <p>This presentation: <a href="http://peterjensen.github.io/html5-simd/">peterjensen.github.io/html5-simd/</a></p>
+</section>
+
+<section>
+<h2>Legal Disclaimer</h2>
+<div class="legal">
+<p>
+INFORMATION IN THIS DOCUMENT IS PROVIDED IN CONNECTION WITH INTEL PRODUCTS.  NO LICENSE, EXPRESS OR IMPLIED, BY ESTOPPEL OR OTHERWISE, TO ANY INTELLECTUAL PROPERTY RIGHTS IS GRANTED BY THIS DOCUMENT.  EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH PRODUCTS, INTEL ASSUMES NO LIABILITY WHATSOEVER AND INTEL DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY, RELATING TO SALE AND/OR USE OF INTEL PRODUCTS INCLUDING LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT, COPYRIGHT OR OTHER INTELLECTUAL PROPERTY RIGHT.<br />
+A "Mission Critical Application" is any application in which failure of the Intel Product could result, directly or indirectly, in personal injury or death.  SHOULD YOU PURCHASE OR USE INTEL'S PRODUCTS FOR ANY SUCH MISSION CRITICAL APPLICATION, YOU SHALL INDEMNIFY AND HOLD INTEL AND ITS SUBSIDIARIES, SUBCONTRACTORS AND AFFILIATES, AND THE DIRECTORS, OFFICERS, AND EMPLOYEES OF EACH, HARMLESS AGAINST ALL CLAIMS COSTS, DAMAGES, AND EXPENSES AND REASONABLE ATTORNEYS' FEES ARISING OUT OF, DIRECTLY OR INDIRECTLY, ANY CLAIM OF PRODUCT LIABILITY, PERSONAL INJURY, OR DEATH ARISING IN ANY WAY OUT OF SUCH MISSION CRITICAL APPLICATION, WHETHER OR NOT INTEL OR ITS SUBCONTRACTOR WAS NEGLIGENT IN THE DESIGN, MANUFACTURE, OR WARNING OF THE INTEL PRODUCT OR ANY OF ITS PARTS.<br />
+Intel may make changes to specifications and product descriptions at any time, without notice.  Designers must not rely on the absence or characteristics of any features or instructions marked "reserved" or "undefined".  Intel reserves these for future definition and shall have no responsibility whatsoever for conflicts or incompatibilities arising from future changes to them.  The information here is subject to change without notice.  Do not finalize a design with this information.
+The products described in this document may contain design defects or errors known as errata which may cause the product to deviate from published specifications.  Current characterized errata are available on request.<br />
+Contact your local Intel sales office or your distributor to obtain the latest specifications and before placing your product order.
+Copies of documents which have an order number and are referenced in this document, or other Intel literature, may be obtained by calling 1-800-548-4725, or go to:  http://www.intel.com/design/literature.htm 
+</p>
+<p>
+River Trail, Nehalem, and other code names featured are used internally within Intel to identify products that are in development and not yet publicly announced for release.  Customers, licensees and other third parties are not authorized by Intel to use code names in advertising, promotion or marketing of any product or services and any such use of Intel's internal code names is at the sole risk of the user. 
+</p>
+<p>
+Intel, Xeon, VTune, Atom, Core, Xeon Phi, Look Inside and the Intel logo are trademarks of Intel Corporation in the United States and other countries.  
+</p>
+<p>
+*Other names and brands may be claimed as the property of others.<br />
+Copyright &copy;2014 Intel Corporation.
+</p>
+</div>
+</section>
+
+<section>
+<div class="optimize-note">
+<p>
+Intel's compilers may or may not optimize to the same degree for non-Intel microprocessors for optimizations that are not unique to Intel microprocessors. These optimizations include SSE2, SSE3, and SSE3 instruction sets and other optimizations. Intel does not guarantee the availability, functionality, or effectiveness of any optimization on microprocessors not manufactured by Intel.
+</p>
+<p>
+Microprocessor-dependent optimizations in this product are intended for use with Intel microprocessors. Certain optimizations not specific to Intel microarchitecture are reserved for Intel microprocessors. Please refer to the applicable product User and Reference Guides for more information regarding the specific instruction sets covered by this notice.
+</p>
+<p>
+Notice revision #20110804 
+</p>
+</div>
+</section>
+
+<section>
+<h2>Legal Disclaimer</h2>
+<div class="legal">
+<p>
+Software and workloads used in performance tests may have been optimized for performance only on Intel microprocessors. Performance tests, such as SYSmark* and MobileMark*, are measured using specific computer systems, components, software, operations and functions.  Any change to any of those factors may cause the results to vary. You should consult other information and performance tests to assist you in fully evaluating your contemplated purchases, including the performance of that product when combined with other products. For more information go to http://www.intel.com/performance.
+</p>
+<p>
+Software Source Code Disclaimer:   Any software source code reprinted in this document is furnished under a software license and may only be used or copied in accordance with the terms of that license. 
+</p>
+<p>
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+</p>
+<p>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND  NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</p>
+</div>
+</section>
+
+<section>
+<h2>Risk Factors</h2>
+<div class="legal">
+<p>
+The above statements and any others in this document that refer to plans and expectations for the third quarter, the year and the future are forward-looking statements that involve a number of risks and uncertainties. Words such as "anticipates," "expects," "intends," "plans," "believes," "seeks," "estimates," "may," "will," "should" and their variations identify forward-looking statements. Statements that refer to or are based on projections, uncertain events or assumptions also identify forward-looking statements. Many factors could affect Intel's actual results, and variances from Intel's current expectations regarding such factors could cause actual results to differ materially from those expressed in these forward-looking statements. Intel presently considers the following to be the important factors that could cause actual results to differ materially from the company's expectations. Demand could be different from Intel's expectations due to factors including changes in business and economic conditions; customer acceptance of Intel's and competitors' products; supply constraints and other disruptions affecting customers; changes in customer order patterns including order cancellations; and changes in the level of inventory at customers. Uncertainty in global economic and financial conditions poses a risk that consumers and businesses may defer purchases in response to negative financial events, which could negatively affect product demand and other related matters. Intel operates in intensely competitive industries that are characterized by a high percentage of costs that are fixed or difficult to reduce in the short term and product demand that is highly variable and difficult to forecast. Revenue and the gross margin percentage are affected by the timing of Intel product introductions and the demand for and market acceptance of Intel's products; actions taken by Intel's competitors, including product offerings and introductions, marketing programs and pricing pressures and Intel's response to such actions; and Intel's ability to respond quickly to technological developments and to incorporate new features into its products. The gross margin percentage could vary significantly from expectations based on capacity utilization; variations in inventory valuation, including variations related to the timing of qualifying products for sale; changes in revenue levels; segment product mix; the timing and execution of the manufacturing ramp and associated costs; start-up costs; excess or obsolete inventory; changes in unit costs; defects or disruptions in the supply of materials or resources; product manufacturing quality/yields; and impairments of long-lived assets, including manufacturing, assembly/test and intangible assets. Intel's results could be affected by adverse economic, social, political and physical/infrastructure conditions in countries where Intel, its customers or its suppliers operate, including military conflict and other security risks, natural disasters, infrastructure disruptions, health concerns and fluctuations in currency exchange rates. Expenses, particularly certain marketing and compensation expenses, as well as restructuring and asset impairment charges, vary depending on the level of demand for Intel's products and the level of revenue and profits. Intel's results could be affected by the timing of closing of acquisitions and divestitures. Intel's results could be affected by adverse effects associated with product defects and errata (deviations from published specifications), and by litigation or regulatory matters involving intellectual property, stockholder, consumer, antitrust, disclosure and other issues, such as the litigation and regulatory matters described in Intel's SEC reports. An unfavorable ruling could include monetary damages or an injunction prohibiting Intel from manufacturing or selling one or more products, precluding particular business practices, impacting Intel's ability to design its products, or requiring other remedies such as compulsory licensing of intellectual property. A detailed discussion of these and other factors that could affect Intel's results is included in Intel's SEC filings, including the company's most recent reports on Form 10-Q, Form 10-K and earnings release.
+</p>
+<p>
+Rev. 7/17/13
+</p>
+</div>
+</section>
+
+</div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.min.js"></script>
+<script src="jquery-2.1.0.js"></script>
+<script src="d3.min.js"></script>
+<script src="shuffle3.js"></script>
+<!--
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+-->
+
+<script>
+
+function revealSetup() {
+
+  var fbird1Window = $("#fbird1 iframe")[0].contentWindow;
+  var fbird2Window = $("#fbird2 iframe")[0].contentWindow;
+  
+  function slideChanged(event) {
+    var currentSlideId = event.currentSlide.id;
+    var prevSlideId    = typeof event.previousSlide === "undefined" ? "undefined" : event.previousSlide.id;
+    
+    if (currentSlideId === "fbird1") {
+      fbird1Window.fbird.init({"alwaysInitialize": "true", "autoStart": "true"});
+    }
+    else if (currentSlideId === "fbird2") {
+      fbird2Window.fbird.init({"alwaysInitialize": "true", "autoStart": "true"});
+    }
+    else if (currentSlideId === "shuffle1") {
+      $("#shuffleContainer1").empty();
+      shuffle.createDiagram("#shuffleContainer1", 0);
+      setTimeout(shuffle.startTransition, 2000);
+    }
+    else if (currentSlideId === "shuffle2") {
+      $("#shuffleContainer2").empty();
+      shuffle.createDiagram("#shuffleContainer2", 1);
+      setTimeout(shuffle.startTransition, 2000);
+    }
+    else if (currentSlideId === "shuffle3") {
+      $("#shuffleContainer3").empty();
+      shuffle.createDiagram("#shuffleContainer3", 2);
+      setTimeout(shuffle.startTransition, 2000);
+    }
+    else if (currentSlideId === "shuffle4") {
+      $("#shuffleContainer4").empty();
+      shuffle.createDiagram("#shuffleContainer4", 3);
+      setTimeout(shuffle.startTransition, 2000);
+    }
+    
+    if (prevSlideId === "fbird1") {
+      fbird1Window.fbird.close();
+    }
+    else if (prevSlideId === "fbird2") {
+      fbird2Window.fbird.close();
+    }
+  }
+
+  var pathName = window.location.pathname;
+  var rootDir = window.location.origin + pathName.substring(0, pathName.lastIndexOf('/'));
+  var mathJaxDir = rootDir + "/mathJAX";
+  
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: false,
+    progress: false,
+    history: true,
+    center: true,
+    width: 1400,
+    height: 1000,
+    minScale: 0.8,
+    maxScale: 1.0,
+    margin: 0.2,
+    slideNumber: true,
+
+    theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+    transition: Reveal.getQueryHash().transition || 'fade', // default/cube/page/concave/zoom/linear/fade/none
+
+    // Parallax scrolling
+    // parallaxBackgroundImage: 'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg',
+    // parallaxBackgroundSize: '2100px 900px',
+
+    // Optional libraries used to extend on reveal.js
+    dependencies: [
+      { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'plugin/math/math.js', async: true, condition: function() { return true; } },
+      { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+    ],
+    
+    math: {config: "TeX-AMS-MML_HTMLorMML", mathjax: "mathJAX/MathJax.js", root: mathJaxDir}
+//    math: {config: "TeX-AMS-MML_HTMLorMML"}
+
+  });
+
+  function webcamStart() {
+    // setup the video element handling
+    navigator.webkitGetUserMedia(
+      {video: true},
+      function(localMediaStream) {
+        var video = document.querySelector('video');
+        video.src = window.URL.createObjectURL(localMediaStream);
+      },
+      function(error) {
+        console.log("ERROR: " + error.name);
+      });
+  }
+
+  Reveal.addEventListener('video-start', webcamStart);
+  Reveal.addEventListener('slidechanged', slideChanged);
+  $("#gotoBirds").click(function () {Reveal.slide(14, 0, 0);});
+  $("#gotoMandelbrot").click(function () {Reveal.slide(16, 0, 0);});
+
+}
+
+$(revealSetup);  
+</script>
+</body>
+</html>

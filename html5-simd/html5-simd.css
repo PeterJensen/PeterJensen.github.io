@@ -1,0 +1,152 @@
+/*
+@font-face {
+    font-family: "Intel Clear";
+    src: url("IntelClear_Rg.woff") format('woff');
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+  font-family: Intel Clear;
+}
+*/
+.reveal sup.star {
+  vertical-align:baseline;
+}
+.reveal h1 sup.star, .reveal h2 sup.star {
+  vertical-align:super;
+}
+.reveal sup.dagger {
+  font-size:80%;
+}
+.reveal .footnote2 {
+  font-size: 0.5em;
+  text-align: right;
+  line-height:1.0em;
+}
+.reveal .footnote1 {
+  margin-top: -1.0em;
+  font-size: 0.4em;
+  text-align: right;
+  line-height:1.0em;
+}
+
+.reveal .frontButton {
+  opacity: 0.03;
+  width: 200px;
+  height:100px;
+  display:inline;
+  position:absolute;
+  background-color:grey;
+  padding-top:50px;
+  cursor:pointer;
+}
+
+.reveal .shuffleContainer {
+  zoom: 2.0;
+}
+
+.reveal .frontButton:hover {
+  opacity: 0.5;
+}
+
+#gotoBirds.frontButton {
+  left:0;
+}
+#gotoMandelbrot.frontButton {
+  right:0;
+}
+
+.reveal code {
+  font-family: Lucida Console;
+  max-height:600px;
+}
+
+pre .class .title {
+  color: black;
+}        	        
+
+pre .function .title {
+  color: black;
+}        	        
+
+pre code {
+  background: white;
+  color: black;
+  max-height: 810px !important;
+  padding-left:15px !important;
+}
+
+pre .keyword {
+  color: blue;
+}
+
+pre .variable {
+  color: black;
+}
+
+pre .number {
+  color: red;
+}
+
+.reveal section img {
+  border: 0px;
+  box-shadow: none;
+}
+
+.reveal .slides section .fragment {
+  transition-duration: 1s;
+}
+
+.highlight {
+  margin:0;
+  display:inline-block;
+  transition-duration:1s;
+}
+.reveal .slides section .highlight {
+  opacity:1;
+}
+
+.reveal .slides section .highlight.visible.current-fragment {
+  border-radius:5px;
+  -webkit-transform:scale(1.1);
+  background:#d0d0d0;
+}
+
+.reveal table th, .reveal table td {
+  vertical-align: middle;
+}
+
+h3.left1 {
+  margin-left: 2em;
+  text-align: left;
+}
+
+.reveal h2 {
+  font-weight:bold;
+}
+
+iframe {
+  overflow: hidden;
+}
+
+.reveal blockquote {
+  width:90%;
+}
+
+div.legal {
+  font-size:0.5em;
+  text-align:left;
+}
+
+div.optimize-note {
+  font-size:1.0em;
+  text-align:left;
+  border: 1px solid black;
+  padding: 0.5em;
+}
+
+ul.left2, ul.left2 li {
+/*
+  margin-left: em;
+  text-align: left;
+*/
+}  
