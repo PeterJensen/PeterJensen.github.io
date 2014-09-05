@@ -1,11 +1,40 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <link rel="stylesheet" href="./idf2014-simd.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IDF2014 Demo Links</title>
+  <link href="./bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./idf2014-simd.css">
 </head>
+
 <body>
-<h1>IDF 2014 - Demo Links</h1>
+<a href="http://idf.intel.com">
+  <div class="jumbotron idf-header">
+    <div class="container">
+    </div>
+  </div>
+</a>
+
+<div class="container">
+  <h1>IDF14 - Demo Links</h1>
+  <p>Here you'll find the links for the demos shown at <a href="https://intel.activeevents.com/sf14/connect/sessionDetail.ww?SESSION_ID=1181">Mohammad Haghighat's IDF2014 talk</a></p>
+  <p>In order to experience the SIMD performance improvements you must use one of the Firefox Nightly builds,
+  so before clicking the links download the Firefox Nightly build for your platform, install the browser, and relaunch this web-page</p>
+  <a href="http://nightly.mozilla.org">
+  <div class="row well">
+    <div class="col-xs-2">
+      <p>Firefox Image</p>
+    </div>
+    <div class="col-xs-8">
+      <h2>Download Firefox Nightly</h2>
+      <p>This will enable you to see the performance gains in the demos from the SIMD extensions</p>
+    </div>
+  </div>
+  </a>
+</div>
+
 <h2><a href="../mandelbrot/js/mandelbrot-asm.html">Mandelbrot with asm.js</a></h2>
 <h2><a href="../mandelbrot/js/mandelbrot-ww-asm.html">Mandelbrot with asm.js and Web Workers</a></h2>
 <h2><a href="../fbird/fbird-asm.html">Flappy birds with asm.js</a></h2>

@@ -1,3 +1,59 @@
+@font-face {
+    font-family: "intel-clear";
+    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "intel-clear";
+    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin-bold.woff") format("woff");
+    font-weight: bold;
+    font-style: normal;
+}
+@font-face {
+    font-family: "intel-clear";
+    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin-italic.woff") format("woff");
+    font-weight: normal;
+    font-style: italic;
+}
+@font-face {
+    font-family: "intel-clear";
+    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin-bold-italic.woff") format("woff");
+    font-weight: bold;
+    font-style: italic;
+}
+@font-face {
+    font-family: "intel-clear";
+    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin-lite.woff") format("woff");
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: "intel-clear";
+    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin-lite-italic.woff") format("woff");
+    font-weight: 200;
+    font-style: italic;
+}
+
+.idf-header {
+  background-image: url('idf14-sf-rwd-main1-16x9.jpg.rendition.intel.web.720.405.jpg');
+  background-repeat: repeat-x;
+  background-position: 0px -230px;
+  color: White;
+}
+
+.ff-nightly {
+  background-image: url('nightly-header-bg.png');
+  background-repeat: no-repeat;
+  background-position: 0px -150px;
+  height:100%;
+}
+
+.row.well {
+  margin-left:0px;
+  margin-right:0px;
+}
+
 body {
   font-family: "intel-clear","tahoma","helvetica",sans-serif;
 }
