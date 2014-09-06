@@ -49,6 +49,11 @@
   height:100%;
 }
 
+.padding-0 {
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
 .row.well {
   margin-left:0px;
   margin-right:0px;
