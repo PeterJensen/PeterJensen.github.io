@@ -1,12 +1,12 @@
 @font-face {
     font-family: "intel-clear";
-    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin.woff") format("woff");
+    src: url("intel-clear-latin.woff") format("woff");
     font-weight: normal;
     font-style: normal;
 }
 @font-face {
     font-family: "intel-clear";
-    src: url("http://www.intel.com/etc/designs/ver/5.2.5.8.27/intel/us/en/Fonts/intel-clear-latin-bold.woff") format("woff");
+    src: url("intel-clear-latin-bold.woff") format("woff");
     font-weight: bold;
     font-style: normal;
 }
@@ -54,9 +54,13 @@
   padding-right: 0px;
 }
 
-.row.well {
+.row {
   margin-left:0px;
   margin-right:0px;
+}
+
+.scale-3 {
+  transform: scale(3);
 }
 
 body {
