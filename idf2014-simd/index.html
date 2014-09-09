@@ -1,11 +1,135 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <link rel="stylesheet" href="./idf2014-simd.css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>IDF2014 Demo Links</title>
+  <link href="./bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./idf2014-simd.css">
 </head>
+
 <body>
-<h1>IDF 2014 - Demo Links</h1>
-Coming soon...
+<a href="http://www.intel.com/content/www/us/en/intel-developer-forum-idf/san-francisco/2014/idf-2014-san-francisco.html">
+  <div class="jumbotron idf-header">
+    <div class="container">
+    </div>
+  </div>
+</a>
+
+<div class="container">
+  <h1>IDF14 - Demo Links</h1>
+  <div class="row">
+    <div class="col-xs-12 col-md-10 padding-0">
+  <p>Here you'll find the links for the demos shown at <a href="https://intel.activeevents.com/sf14/connect/speakerDetail.ww?PERSON_ID=23C33B437226F52EBC6934AAAA7BC006">
+  Moh Haghighat's</a> <a href="https://intel.activeevents.com/sf14/connect/sessionDetail.ww?SESSION_ID=1181">IDF2014 talk.</a></p>
+  <p>In order to experience the SIMD performance improvements you must use one of the Firefox Nightly builds, or a special experimental Intel build of Chromium with SIMD.
+  The links to download these are below.  Once installed, launch it and reopen this web page.</p>
+    </div>
+  </div>
+  
+  <div class="row">&nbsp;</div>
+  
+  <div class="row">
+    <a href="http://nightly.mozilla.org">
+    <div class="col-md-5 col-xs-12 well">
+      <div class="col-xs-4">
+        <img class="img-responsive" src="firefox-small.png" />
+      </div>
+      <div class="col-xs-8">
+        <h3>Download<br />Firefox Nightly</h3>
+      </div>
+    </div>
+    </a>
+    <div class="col-md-2 col-xs-12">
+      <h2 class="text-center">and/or</h2>
+    </div>
+    <a href="https://drive.google.com/folderview?id=0B9RVWZYRtYFeU1pHUWZIeVNtN0k&usp=sharing">
+    <div class="col-md-5 col-xs-12 well">
+      <div class="col-xs-4">
+        <img class="img-responsive" src="chromium.png" />
+      </div>
+      <div class="col-xs-8">
+        <h3>Download Experimental Chromium/SIMD</h3>
+        <p>NOTE: Add '--js-flags=--simd-object' to the command line invocation
+      </div>
+    </div>
+    </a>
+  </div>
+  
+  <a href="../mandelbrot/js/mandelbrot-asm.html">
+  <div class="row well">
+    <div class="col-xs-4 col-md-2 padding-0">
+      <img class="img-responsive img-rounded" src="mandelbrot-small.png" />
+    </div>
+    <div class="col-xs-8 col-md-10">
+      <h2>Mandelbrot using asm.js</h2>
+      <p>This demo is using the asm.js subset.  Runs in both Firefox nightly and the Chromium build</p>
+    </div>
+  </div>
+  </a>
+
+  <a href="../mandelbrot/js/mandelbrot-ww-asm.html">
+  <div class="row well">
+    <div class="col-xs-4 col-md-2 padding-0">
+      <img class="img-responsive img-rounded" src="mandelbrot-ww-small.png" />
+    </div>
+    <div class="col-xs-8 col-md-10">
+      <h2>Mandelbrot using asm.js with Web Workers</h2>
+      <p>This demo is using the asm.js subset with Web Workers.  Runs in both Firefox nightly and the Chromium build</p>
+    </div>
+  </div>
+  </a>
+
+  <a href="../fbird/fbird-asm.html">
+  <div class="row well">
+    <div class="col-xs-4 col-md-2 padding-0">
+      <img class="img-responsive img-rounded" src="fbird-spy2-big.png" />
+    </div>
+    <div class="col-xs-8 col-md-10">
+      <h2>Jumping birds using asm.js</h2>
+      <p>This demo is using the asm.js subset.  Runs in both Firefox nightly and the Chromium build</p>
+    </div>
+  </div>
+  </a>
+
+  <a href="../mandelbrot/js/mandelbrot-xdk.html">
+  <div class="row well">
+    <div class="col-xs-4 col-md-2 padding-0">
+      <img class="img-responsive img-rounded" src="mandelbrot-small.png" />
+    </div>
+    <div class="col-xs-8 col-md-10">
+      <h2>Mandelbrot <b>without</b> asm.js</h2>
+      <p>This demo is not using the asm.js subset.  <b>You must use the Chromium build</b></p>
+    </div>
+  </div>
+  </a>
+  
+  <a href="../mandelbrot/js/mandelbrot-xdk-ww.html">
+  <div class="row well">
+    <div class="col-xs-4 col-md-2 padding-0">
+      <img class="img-responsive img-rounded" src="mandelbrot-ww-small.png" />
+    </div>
+    <div class="col-xs-8 col-md-10">
+      <h2>Mandelbrot <b>without</b> asm.js with Web Workers</h2>
+      <p>This demo is not using the asm.js subset.  <b>You must use the Chromium build</b></p>
+    </div>
+  </div>
+  </a>
+  
+  <a href="../fbird/fbird.html">
+  <div class="row well">
+    <div class="col-xs-4 col-md-2 padding-0">
+      <img class="img-responsive img-rounded" src="fbird-spy2-big.png" />
+    </div>
+    <div class="col-xs-8 col-md-10">
+      <h2>Jumping birds <b>without</b> asm.js</h2>
+      <p>This demo is not using the asm.js subset.  <b>You must use the Chromium build</b></p>
+    </div>
+  </div>
+  </a>
+  
+</div>
+
 </body>
 </html>
