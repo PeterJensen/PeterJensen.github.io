@@ -1,0 +1,73 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML5 Dev Conf - Box2D/SIMD.JS/Emscripten</title>
+  <link href="./bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./html5-box2d.css">
+</head>
+
+<body>
+<a href="http://html5devconf.com">
+  <div class="jumbotron html5-header">
+    <div class="container">
+    </div>
+  </div>
+</a>
+
+<div class="container">
+  <h1>Box2D with SIMD in JavaScript</h1>
+  <h3>Ningxin Hu and Peter Jensen</h3>
+  <div class="row">
+    <div class="col-xs-12 col-md-10 padding-0">
+  <p>Here you'll find the presentation and other relevant material we presented at the <a href="http://html5devconf.com/speakers/peter_jensen.html#session">October, 2014 HTML5 Developer Conference.</a></p>
+  <p>In order to get the best experience for the SIMD enabled demos you must use one of the Firefox Nightly builds, or a special experimental Intel build of Chromium with SIMD.</p>
+  <p>The links to download these are below.  Once installed, launch it and reopen this web page.</p>
+    </div>
+  </div>
+  
+  <div class="row">&nbsp;</div>
+  
+  <div class="row">
+    <a href="http://nightly.mozilla.org">
+    <div class="col-md-5 col-xs-12 well">
+      <div class="col-xs-4">
+        <img class="img-responsive" src="firefox-small.png" />
+      </div>
+      <div class="col-xs-8">
+        <h3>Download<br />Firefox Nightly</h3>
+      </div>
+    </div>
+    </a>
+    <div class="col-md-2 col-xs-12">
+      <h2 class="text-center">and/or</h2>
+    </div>
+    <a href="https://drive.google.com/folderview?id=0B9RVWZYRtYFeU1pHUWZIeVNtN0k&usp=sharing">
+    <div class="col-md-5 col-xs-12 well">
+      <div class="col-xs-4">
+        <img class="img-responsive" src="chromium.png" />
+      </div>
+      <div class="col-xs-8">
+        <h3>Download Experimental Chromium/SIMD</h3>
+        <p>NOTE: Add '--js-flags=--simd-object' to the command line invocation
+      </div>
+    </div>
+    </a>
+  </div>
+
+  <h3><a href="html5-box2d.pdf">Presentation (.pdf file)</a></h3>
+
+  <h3>Demos</h3>
+  <ul>
+    <li><a href="../fbird/fbird-asm.html">Jumping birds using asm.js</a></li>
+    <li><a href="../fbird/fbird.html">Jumping birds without asm.js (must use Chromium with SIMD)</a></li>
+    <li><a href="ballpit.html">Ballpit with Box2DWeb</a></li>
+    <li><a href="ballpit_asm.html">Ballpit with box2d.js (asm.js)</a></li>
+  </ul>
+  
+</div>
+
+</body>
+</html>
