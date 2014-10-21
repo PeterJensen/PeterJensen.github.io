@@ -35,6 +35,6 @@ function init() {
 }
 
 function step() {
-  world.Step(1 / 60, 3, 3);
+  world.Step(1 / 120, 3, 3);
 }
 
